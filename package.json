@@ -1,0 +1,22 @@
+{
+  "name": "react-bun-hono-2024",
+  "module": "server/index.ts",
+  "type": "module",
+  "scripts": {
+    "server:dev": "bun --watch server/index.ts"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.5.8",
+    "@types/bun": "latest",
+    "@types/node": "^22.5.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.2.2",
+    "@radix-ui/react-slot": "^1.1.0",
+    "hono": "^4.6.2",
+    "zod": "^3.23.8"
+  }
+}
