@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { getTotalSpent } from "@/lib/api/getTotalSpent";
+import { getTotalSpent } from "@/lib/api";
 
 const Home = () => {
   const { isError, error, isPending, data } = useQuery({
