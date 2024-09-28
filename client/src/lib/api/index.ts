@@ -7,3 +7,4 @@ export const api = client.api;
 
 export { getExpenses } from './getExpenses';
 export { getTotalSpent } from './getTotalSpent';
+export { createExpense } from './createExpense';
