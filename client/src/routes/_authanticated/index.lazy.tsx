@@ -1,24 +1,24 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute } from '@tanstack/react-router'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
-import { getTotalSpent } from "@/lib/api";
+} from '@/components/ui/card'
+import { useQuery } from '@tanstack/react-query'
+import { getTotalSpent } from '@/lib/api'
 
 const Home = () => {
   const { isError, error, isPending, data } = useQuery({
-    queryKey: ["get-total-spend"],
+    queryKey: ['get-total-spend'],
     queryFn: getTotalSpent,
-  });
+  })
 
   if (isError) {
     return (
       <div>{`An error has occured  ${JSON.stringify(error, null, 2)}`}</div>
-    );
+    )
   }
 
   return (
@@ -27,11 +27,11 @@ const Home = () => {
         <CardTitle>Total spent</CardTitle>
         <CardDescription>The total amount you've spent</CardDescription>
       </CardHeader>
-      <CardContent>{isPending ? "Loading..." : data}</CardContent>
+      <CardContent>{isPending ? 'Loading...' : data}</CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export const Route = createLazyFileRoute("/")({
+export const Route = createLazyFileRoute('/_authanticated/')({
   component: Home,
-});
+})

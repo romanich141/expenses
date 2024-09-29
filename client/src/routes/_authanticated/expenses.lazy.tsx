@@ -1,5 +1,5 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createLazyFileRoute } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import {
   Table,
   TableBody,
@@ -8,20 +8,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { getExpenses } from "@/lib/api";
-import { Skeleton } from "@/components/ui/skeleton";
+} from '@/components/ui/table'
+import { getExpenses } from '@/lib/api'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const Expenses = () => {
   const { isError, error, isPending, data } = useQuery({
-    queryKey: ["get-all-expenses"],
+    queryKey: ['get-all-expenses'],
     queryFn: getExpenses,
-  });
+  })
 
   if (isError) {
     return (
       <div>{`An error has occured  ${JSON.stringify(error, null, 2)}`}</div>
-    );
+    )
   }
 
   return (
@@ -62,9 +62,9 @@ const Expenses = () => {
         </TableBody>
       </Table>
     </div>
-  );
-};
+  )
+}
 
-export const Route = createLazyFileRoute("/expenses")({
+export const Route = createLazyFileRoute('/_authanticated/expenses')({
   component: Expenses,
-});
+})

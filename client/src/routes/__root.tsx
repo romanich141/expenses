@@ -1,34 +1,22 @@
-import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
+import { NavBar } from "@/components";
+import { type QueryClient } from "@tanstack/react-query";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 // import { TanStackRouterDevtools } from "@tanstack/router-devtools";
-
-const NavBar = () => (
-  <>
-    <div className="p-2 flex gap-2">
-      <Link to="/" className="[&.active]:font-bold">
-        Home
-      </Link>{" "}
-      <Link to="/about" className="[&.active]:font-bold">
-        About
-      </Link>
-      <Link to="/expenses" className="[&.active]:font-bold">
-        Expenses
-      </Link>{" "}
-      <Link to="/create-expense" className="[&.active]:font-bold">
-        Create
-      </Link>
-    </div>
-    {/* <TanStackRouterDevtools /> */}
-  </>
-);
 
 const Root = () => (
   <>
     <NavBar />
     <hr />
-    <Outlet />
+    <div className="p-2 flex gap-2 max-w-2xl m-auto">
+      <Outlet />
+    </div>
   </>
 );
 
-export const Route = createRootRoute({
+interface IRouterContext {
+  queryClient: QueryClient;
+}
+
+export const Route = createRootRouteWithContext<IRouterContext>()({
   component: Root,
 });

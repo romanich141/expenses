@@ -13,47 +13,72 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as AuthanticatedImport } from './routes/_authanticated'
 
 // Create Virtual Routes
 
-const ExpensesLazyImport = createFileRoute('/expenses')()
-const CreateExpenseLazyImport = createFileRoute('/create-expense')()
 const AboutLazyImport = createFileRoute('/about')()
-const IndexLazyImport = createFileRoute('/')()
+const AuthanticatedIndexLazyImport = createFileRoute('/_authanticated/')()
+const AuthanticatedProfileLazyImport = createFileRoute(
+  '/_authanticated/profile',
+)()
+const AuthanticatedExpensesLazyImport = createFileRoute(
+  '/_authanticated/expenses',
+)()
+const AuthanticatedCreateExpenseLazyImport = createFileRoute(
+  '/_authanticated/create-expense',
+)()
 
 // Create/Update Routes
-
-const ExpensesLazyRoute = ExpensesLazyImport.update({
-  path: '/expenses',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/expenses.lazy').then((d) => d.Route))
-
-const CreateExpenseLazyRoute = CreateExpenseLazyImport.update({
-  path: '/create-expense',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() =>
-  import('./routes/create-expense.lazy').then((d) => d.Route),
-)
 
 const AboutLazyRoute = AboutLazyImport.update({
   path: '/about',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route))
 
-const IndexLazyRoute = IndexLazyImport.update({
-  path: '/',
+const AuthanticatedRoute = AuthanticatedImport.update({
+  id: '/_authanticated',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+} as any)
+
+const AuthanticatedIndexLazyRoute = AuthanticatedIndexLazyImport.update({
+  path: '/',
+  getParentRoute: () => AuthanticatedRoute,
+} as any).lazy(() =>
+  import('./routes/_authanticated/index.lazy').then((d) => d.Route),
+)
+
+const AuthanticatedProfileLazyRoute = AuthanticatedProfileLazyImport.update({
+  path: '/profile',
+  getParentRoute: () => AuthanticatedRoute,
+} as any).lazy(() =>
+  import('./routes/_authanticated/profile.lazy').then((d) => d.Route),
+)
+
+const AuthanticatedExpensesLazyRoute = AuthanticatedExpensesLazyImport.update({
+  path: '/expenses',
+  getParentRoute: () => AuthanticatedRoute,
+} as any).lazy(() =>
+  import('./routes/_authanticated/expenses.lazy').then((d) => d.Route),
+)
+
+const AuthanticatedCreateExpenseLazyRoute =
+  AuthanticatedCreateExpenseLazyImport.update({
+    path: '/create-expense',
+    getParentRoute: () => AuthanticatedRoute,
+  } as any).lazy(() =>
+    import('./routes/_authanticated/create-expense.lazy').then((d) => d.Route),
+  )
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexLazyImport
+    '/_authanticated': {
+      id: '/_authanticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthanticatedImport
       parentRoute: typeof rootRoute
     }
     '/about': {
@@ -63,68 +88,108 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutLazyImport
       parentRoute: typeof rootRoute
     }
-    '/create-expense': {
-      id: '/create-expense'
+    '/_authanticated/create-expense': {
+      id: '/_authanticated/create-expense'
       path: '/create-expense'
       fullPath: '/create-expense'
-      preLoaderRoute: typeof CreateExpenseLazyImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof AuthanticatedCreateExpenseLazyImport
+      parentRoute: typeof AuthanticatedImport
     }
-    '/expenses': {
-      id: '/expenses'
+    '/_authanticated/expenses': {
+      id: '/_authanticated/expenses'
       path: '/expenses'
       fullPath: '/expenses'
-      preLoaderRoute: typeof ExpensesLazyImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof AuthanticatedExpensesLazyImport
+      parentRoute: typeof AuthanticatedImport
+    }
+    '/_authanticated/profile': {
+      id: '/_authanticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthanticatedProfileLazyImport
+      parentRoute: typeof AuthanticatedImport
+    }
+    '/_authanticated/': {
+      id: '/_authanticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthanticatedIndexLazyImport
+      parentRoute: typeof AuthanticatedImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface AuthanticatedRouteChildren {
+  AuthanticatedCreateExpenseLazyRoute: typeof AuthanticatedCreateExpenseLazyRoute
+  AuthanticatedExpensesLazyRoute: typeof AuthanticatedExpensesLazyRoute
+  AuthanticatedProfileLazyRoute: typeof AuthanticatedProfileLazyRoute
+  AuthanticatedIndexLazyRoute: typeof AuthanticatedIndexLazyRoute
+}
+
+const AuthanticatedRouteChildren: AuthanticatedRouteChildren = {
+  AuthanticatedCreateExpenseLazyRoute: AuthanticatedCreateExpenseLazyRoute,
+  AuthanticatedExpensesLazyRoute: AuthanticatedExpensesLazyRoute,
+  AuthanticatedProfileLazyRoute: AuthanticatedProfileLazyRoute,
+  AuthanticatedIndexLazyRoute: AuthanticatedIndexLazyRoute,
+}
+
+const AuthanticatedRouteWithChildren = AuthanticatedRoute._addFileChildren(
+  AuthanticatedRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
-  '/': typeof IndexLazyRoute
+  '': typeof AuthanticatedRouteWithChildren
   '/about': typeof AboutLazyRoute
-  '/create-expense': typeof CreateExpenseLazyRoute
-  '/expenses': typeof ExpensesLazyRoute
+  '/create-expense': typeof AuthanticatedCreateExpenseLazyRoute
+  '/expenses': typeof AuthanticatedExpensesLazyRoute
+  '/profile': typeof AuthanticatedProfileLazyRoute
+  '/': typeof AuthanticatedIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
-  '/create-expense': typeof CreateExpenseLazyRoute
-  '/expenses': typeof ExpensesLazyRoute
+  '/create-expense': typeof AuthanticatedCreateExpenseLazyRoute
+  '/expenses': typeof AuthanticatedExpensesLazyRoute
+  '/profile': typeof AuthanticatedProfileLazyRoute
+  '/': typeof AuthanticatedIndexLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexLazyRoute
+  '/_authanticated': typeof AuthanticatedRouteWithChildren
   '/about': typeof AboutLazyRoute
-  '/create-expense': typeof CreateExpenseLazyRoute
-  '/expenses': typeof ExpensesLazyRoute
+  '/_authanticated/create-expense': typeof AuthanticatedCreateExpenseLazyRoute
+  '/_authanticated/expenses': typeof AuthanticatedExpensesLazyRoute
+  '/_authanticated/profile': typeof AuthanticatedProfileLazyRoute
+  '/_authanticated/': typeof AuthanticatedIndexLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/create-expense' | '/expenses'
+  fullPaths: '' | '/about' | '/create-expense' | '/expenses' | '/profile' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/create-expense' | '/expenses'
-  id: '__root__' | '/' | '/about' | '/create-expense' | '/expenses'
+  to: '/about' | '/create-expense' | '/expenses' | '/profile' | '/'
+  id:
+    | '__root__'
+    | '/_authanticated'
+    | '/about'
+    | '/_authanticated/create-expense'
+    | '/_authanticated/expenses'
+    | '/_authanticated/profile'
+    | '/_authanticated/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexLazyRoute: typeof IndexLazyRoute
+  AuthanticatedRoute: typeof AuthanticatedRouteWithChildren
   AboutLazyRoute: typeof AboutLazyRoute
-  CreateExpenseLazyRoute: typeof CreateExpenseLazyRoute
-  ExpensesLazyRoute: typeof ExpensesLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexLazyRoute: IndexLazyRoute,
+  AuthanticatedRoute: AuthanticatedRouteWithChildren,
   AboutLazyRoute: AboutLazyRoute,
-  CreateExpenseLazyRoute: CreateExpenseLazyRoute,
-  ExpensesLazyRoute: ExpensesLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -139,23 +204,37 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
-        "/about",
-        "/create-expense",
-        "/expenses"
+        "/_authanticated",
+        "/about"
       ]
     },
-    "/": {
-      "filePath": "index.lazy.tsx"
+    "/_authanticated": {
+      "filePath": "_authanticated.tsx",
+      "children": [
+        "/_authanticated/create-expense",
+        "/_authanticated/expenses",
+        "/_authanticated/profile",
+        "/_authanticated/"
+      ]
     },
     "/about": {
       "filePath": "about.lazy.tsx"
     },
-    "/create-expense": {
-      "filePath": "create-expense.lazy.tsx"
+    "/_authanticated/create-expense": {
+      "filePath": "_authanticated/create-expense.lazy.tsx",
+      "parent": "/_authanticated"
     },
-    "/expenses": {
-      "filePath": "expenses.lazy.tsx"
+    "/_authanticated/expenses": {
+      "filePath": "_authanticated/expenses.lazy.tsx",
+      "parent": "/_authanticated"
+    },
+    "/_authanticated/profile": {
+      "filePath": "_authanticated/profile.lazy.tsx",
+      "parent": "/_authanticated"
+    },
+    "/_authanticated/": {
+      "filePath": "_authanticated/index.lazy.tsx",
+      "parent": "/_authanticated"
     }
   }
 }
