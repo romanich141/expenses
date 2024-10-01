@@ -1,65 +1,93 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
-
-const expenseSchema = z.object({
-    id: z.number().int().positive().min(1),
-    title: z.string().min(3).max(100),
-    amount: z.number().int().positive()
-})
-
-const createExpenseSchema = expenseSchema.omit({id: true});
-
-type TExpense = z.infer<typeof expenseSchema>
-
-const fakeExpenses: TExpense[] = [
-    {
-        id: 1,
-        title: "expense 1",
-        amount: 1234
-    }, {
-        id: 2,
-        title: "expense 2",
-        amount: 1234
-    }, {
-        id: 3,
-        title: "expense 3",
-        amount: 1234
-    }
-];
+import { db } from "../db";
+import {
+  expenses as expensesTable,
+  insertExpensesSchema,
+} from "../db/schema/expenses";
+import { getUser } from "../kinde";
+import { desc, eq, sum, and } from "drizzle-orm";
+import { createExpenseSchema } from "../sharedTypes";
 
 export const expensesRoute = new Hono()
-    .get('/', (context) => {
-        return context.json({ expenses: fakeExpenses })
-    })
-    .get('/total', (context) => {
-        const totalExpenses = fakeExpenses.reduce((total, expense) => total + expense.amount, 0)
-        return context.json({totalExpenses})
-    })
-.get('/:id{[0-9]+}', (context) => {
+  .get("/", getUser, async (context) => {
+    const userProfile = context.var.userProfile;
+
+    const expenses = await db
+      .select()
+      .from(expensesTable)
+      .where(eq(expensesTable.userId, userProfile.id))
+      .orderBy(desc(expensesTable.createdAt));
+
+    return context.json({ expenses });
+  })
+  .get("/total", getUser, async (context) => {
+    const userProfile = context.var.userProfile;
+    const { total } = await db
+      .select({ total: sum(expensesTable.amount) })
+      .from(expensesTable)
+      .where(eq(expensesTable.userId, userProfile.id))
+      .limit(1)
+      .then((result) => result[0]);
+
+    return context.json({ totalExpenses: total ?? 0 });
+  })
+  .get("/:id{[0-9]+}", getUser, async (context) => {
+    const userProfile = context.var.userProfile;
+
     const id = Number.parseInt(context.req.param().id);
-    const expense = fakeExpenses.find((expense) => expense.id === id)
-    
+
+    const expense = await db
+      .select()
+      .from(expensesTable)
+      .where(
+        and(eq(expensesTable.userId, userProfile.id), eq(expensesTable.id, id))
+      )
+      .orderBy(desc(expensesTable.createdAt))
+      .then((result) => result[0]);
+
     if (!expense) {
-        return context.notFound()
+      return context.notFound();
     }
 
-    return context.json({expense})
-})
-.post('/', zValidator('json', createExpenseSchema), async (context) => {
-    const expense = await context.req.valid('json');
-    fakeExpenses.push({ ...expense, id: fakeExpenses.length + 1})
-    context.status(201);
-    return context.json({fakeExpenses});
-})
-.delete('/:id{[0-9]+}', (context) => {
+    return context.json({ expense });
+  })
+  .post(
+    "/",
+    getUser,
+    zValidator("json", createExpenseSchema),
+    async (context) => {
+      const expense = await context.req.valid("json");
+      const userProfile = context.var.userProfile;
+      const validateExpense = insertExpensesSchema.parse({
+        ...expense,
+        userId: userProfile.id,
+      });
+      const result = await db
+        .insert(expensesTable)
+        .values(validateExpense)
+        .returning();
+
+      context.status(201);
+      return context.json({ result });
+    }
+  )
+  .delete("/:id{[0-9]+}", getUser, async (context) => {
     const id = Number.parseInt(context.req.param().id);
-    const deleteIndex = fakeExpenses.findIndex((expense) => expense.id === id)
-    
-    if (deleteIndex === -1) {
-        return context.notFound()
+    const userProfile = context.var.userProfile;
+
+    const expense = await db
+      .delete(expensesTable)
+      .where(
+        and(eq(expensesTable.userId, userProfile.id), eq(expensesTable.id, id))
+      )
+      .returning()
+      .then((result) => result[0]);
+
+    if (!expense) {
+      return context.notFound();
     }
 
-    const deletedExpense = fakeExpenses.splice(deleteIndex, 1)[0]
-    return context.json({expense: deletedExpense})
-})
+    return context.json({ expense });
+  });
